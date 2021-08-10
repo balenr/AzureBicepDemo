@@ -39,5 +39,5 @@ jobs:
         uses: azure/powershell@v1
         with:
           inlineScript: |
-            New-AzResourceGroupDeployment -ResourceGroupName ${{ env.resourceGroupName }} -TemplateFile ${{ ./biceptemplates/storageaccount.json }} -Whatif
+            New-AzResourceGroupDeployment -ResourceGroupName ${{ env.resourceGroupName }} -TemplateFile ${{ env.bicepFilePatch }} -Whatif
           azPSVersion: latest
