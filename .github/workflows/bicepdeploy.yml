@@ -3,9 +3,14 @@ name: Build and Deploy
 on:
   workflow_dispatch:
 
+env:
+  resourceGroupName: AzureBicepDemoRG
+  bicepFilePath: biceptemplates/storageaccount.bicep
+
 jobs:
 
-  build:
+  buildtest:
+    name: Build & Test
     runs-on: ubuntu-latest
     steps:
 
@@ -16,7 +21,23 @@ jobs:
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
 
-      - name: Run az group list
-        run: |
-          az group list
+      - name: Build Bicep file
+        uses: azure/cli@1.0.4
+        with:
+          inlineScript: |
+            az bicep build --file ${{ env.bicepFilePatch }} --outfile ./biceptemplates/storageaccount.json
+
+      - name: Upload ARM template as artifact
+        uses: actions/upload-artifact@v2.2.4
+        with:
+          path: ./biceptemplates/storageaccount.json
+          if-no-files-found: error
+
+      - name: Test with Whatif
+        uses: azure/powershell@v1
+        with:
+          inlineScript: |
+            New-AzResourceGroupDeployment -ResourceGroupName ${{ env.resourceGroupName }} -TemplateFile ${{ ./biceptemplates/storageaccount.json }} -Whatif
+          azPSVersion: latest
