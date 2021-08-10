@@ -1,6 +1,7 @@
-param prefix string = ''
+@maxLength(11)
+param prefix string = 'bicep'
 
-var uniqueStorageName = '${prefix}stg${uniqueString(resourceGroup().id)}'
+var uniqueStorageName = '${prefix}sta${uniqueString(resourceGroup().id, subscription().id)}'
 
 resource stg 'Microsoft.Storage/storageAccounts@2021-02-01' = if (!empty(prefix)) {
   name: uniqueStorageName
