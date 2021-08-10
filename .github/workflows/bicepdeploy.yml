@@ -21,23 +21,21 @@ jobs:
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-          enable-AzPSSession: true
 
       - name: Build Bicep file
         uses: azure/cli@1.0.4
         with:
           inlineScript: |
-            az bicep build --file ${{ env.bicepFilePatch }} --outfile ./biceptemplates/storageaccount.json
+            az bicep build --filef ${{ env.bicepFilePath }} --outfile ./biceptemplates/storageaccount.json
 
       - name: Upload ARM template as artifact
         uses: actions/upload-artifact@v2.2.4
         with:
-          path: ./biceptemplates/storageaccount.json
+          path: biceptemplates/storageaccount.json
           if-no-files-found: error
 
       - name: Test with Whatif
-        uses: azure/powershell@v1
+        uses: azure/cli@1.0.4
         with:
           inlineScript: |
-            New-AzResourceGroupDeployment -ResourceGroupName ${{ env.resourceGroupName }} -TemplateFile ${{ env.bicepFilePatch }} -Whatif
-          azPSVersion: latest
+            az deployment group create --resource-group ${{ env.resourceGroupName }} --template-file ${{ env.bicepFilePatch }} --what-if --what-if-result-format ResourceIdOnly
