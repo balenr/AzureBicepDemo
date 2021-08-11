@@ -5,7 +5,8 @@ on:
 
 env:
   resourceGroupName: AzureBicepDemoRG
-  bicepFilePath: biceptemplates/storageaccount.bicep
+  bicepFilePath: main.bicep
+  jsonFilePath: main.json
 
 jobs:
 
@@ -26,16 +27,20 @@ jobs:
         uses: azure/cli@1.0.4
         with:
           inlineScript: |
-            az bicep build --file ${{ env.bicepFilePath }} --outfile biceptemplates/storageaccount.json
+            az bicep build --file ${{ env.bicepFilePath }} \
+            --outfile ${{ env.jsonFilePath }}
 
       - name: Upload ARM template as artifact
         uses: actions/upload-artifact@v2.2.4
         with:
-          path: biceptemplates/storageaccount.json
+          path: ${{ env.jsonFilePath }}
           if-no-files-found: error
 
-      - name: Test with Whatif
+      - name: Test Bicep template with What-if
         uses: azure/cli@1.0.4
         with:
           inlineScript: |
-            az deployment group create --resource-group ${{ env.resourceGroupName }} --template-file biceptemplates/storageaccount.json --what-if --what-if-result-format ResourceIdOnly
+            az deployment group create \
+            --resource-group ${{ env.resourceGroupName }} \
+            --template-file ${{ env.bicepFilePath }} \
+            --what-if --what-if-result-format ResourceIdOnly
